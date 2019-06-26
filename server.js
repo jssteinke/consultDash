@@ -19,10 +19,12 @@ var lengthByte;
 
 function handleData(data, bytesExpected){
   // create an array of the size of requested data length and fill with requested data
+  console.log('-----------');
+
   for(var i = 0; i < data.length; i++){
     // read just 1 byte at a time of the stream
     var char = data.toString('hex',i,i+1);
-	console.log(char);
+    console.log(char);
     if(char === "ff"){
       // Beginning of data array, the frame has started
       frameStarted = true;
