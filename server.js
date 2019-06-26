@@ -7,11 +7,11 @@ var SerialPort = serialport.SerialPort;
 
 // Don't set the serialport on development
 if (process.env.NODE_ENV != "development"){
-  var sp = new SerialPort('/dev/ttyUSB0', { baudrate: 9600 });
+  var sp = new SerialPort('/dev/ttyUSB0', { baudrate: 19200 });
 }
 
 // All the values we are getting from the ECU
-var rpm, mph, coolantTemp = 0;
+var rpm, mph, coolantTemp, oilPressure, oilTemp, fuelPres, bat, tps, map, iat, egt, lambda, err = 0;
 
 var currentData= [];
 var frameStarted = false;
@@ -22,6 +22,7 @@ function handleData(data, bytesExpected){
   for(var i = 0; i < data.length; i++){
     // read just 1 byte at a time of the stream
     var char = data.toString('hex',i,i+1);
+	console.log(char);
     if(char === "ff"){
       // Beginning of data array, the frame has started
       frameStarted = true;
@@ -89,18 +90,21 @@ var bytesRequested = (command.length - 1) / 2;
 if (process.env.NODE_ENV != "development"){
 
   sp.on("open", function () {
+    //TODO write init bytes?
     // Write initialization bytes to the ECU
-    sp.write([0xFF, 0xFF, 0xEF], function(err, results) {});
+    //sp.write([0xFF, 0xFF, 0xEF], function(err, results) {});
     sp.on('data', function(data) {
       // Check to see if the ECU is connected and has sent the connection confirmation byte "10"
-      if(!isConnected && data.toString('hex') === "10"){
+      if(!isConnected){
         console.log("connected");
         isConnected = true;
+        //TODO check ecu actually connected?
         // Tell the ECU what data we want it to give us
-        sp.write(command, function(err,results){});
+        //sp.write(command, function(err,results){});
       }else{
         // Read the data from the stream and parse it
-        parseData(handleData(data, bytesRequested));
+        // emu aim packet is always 5 bytes 
+        parseData(handleData(data, 5));
       }
     });
   });
@@ -125,17 +129,17 @@ io.on('connection', function (socket) {
 
       // Change values so you can see it go up when developing
       if (process.env.NODE_ENV === "development"){
-        if(rpm < 7200){
-          rpm += 11
+        if(rpm < 8500){
+          rpm += 51
         } else{
           rpm = 0
         }
-        if(mph < 120){
-          mph += 1
+        if(mph < 160){
+          mph += 5
         } else{
           mph = 0
         }
-        if(coolantTemp < 210){
+        if(coolantTemp < 220){
           coolantTemp += 1
         } else{
           coolantTemp = 0
