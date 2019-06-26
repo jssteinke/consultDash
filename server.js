@@ -25,6 +25,8 @@ function handleData(data, bytesExpected){
     // read just 1 byte at a time of the stream
     var char = data.toString('hex',i,i+1);
     console.log(char);
+    
+    /*
     if(char === "ff"){
       // Beginning of data array, the frame has started
       frameStarted = true;
@@ -42,6 +44,7 @@ function handleData(data, bytesExpected){
         currentData.push(parseInt(char, 16));
       }
     }
+  */
   }
   if(currentData.length === bytesExpected){
     // End of data, return the array of data
@@ -106,8 +109,9 @@ if (process.env.NODE_ENV != "development"){
       }else{
         // Read the data from the stream and parse it
         // emu aim packet is always 5 bytes 
-        parseData(handleData(data, 5));
-      }
+        //parseData(handleData(data, 5));
+        handleData(data, 5);
+}
     });
   });
 }
